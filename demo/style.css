@@ -1,7 +1,7 @@
 body {
-  font-family: helvetica, sans-serif, arial;
-  font-size: 1em;
-  color: #111;
+  font-family: monospace;
+  color: #333;
+  margin: 0;
 }
 
 h1 {
@@ -10,15 +10,42 @@ h1 {
 
 #hosts-container {
   vertical-align: top;
-  width: 19%;
-  display: inline-block;
+  position: fixed;
+  height: 100%;
+  left: 0;
+  width: 20%;
+  overflow: auto;
+  transition: all .1s ease;
+}
+
+.host {
+  display: table;
+  cursor: pointer;
+}
+
+.docker-li {
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+  list-style: none;
+  border-bottom: solid 1px #ccc;
+  border-top: solid 1px #ccc;
+  margin: 0 0 -1px;
+  padding: 3px 0;
+  background: #eceef1;
+}
+
+.docker-li:hover {
+  background: #4FC1E9;
 }
 
 #terminal-container {
-  display: inline-block;
+  position: fixed;
+  right: 0;
+  top: 0;
+  height:100%;
   width: 80%;
-  height: 600px;
-  margin: 0 auto;
+  transition: all .1s ease;
 }
 
 #terminal-container .terminal {

@@ -5,14 +5,15 @@ var term,
     pid,
     checked = {}
 
-const hosts = 10
+const hosts = 100
 
 var terminalContainer = document.getElementById('terminal-container')
 var hostsContainer = document.getElementById('hosts-container');
 
 (() => {
   for (var i = 5; i < hosts; i++) {
-    hostsContainer.innerHTML += `<div id='host-${i}'>10.1.10.${i} </div><div id='docker-${i}'></div>`
+    hostsContainer.innerHTML +=
+      `<div class='host' id='host-${i}'> 10.1.10.${i} </div><div id='docker-${i}'></div>`
     fetch(`/check?address=${i}`)
       .then((res) => {
         if(res.status !== 200) {
@@ -22,6 +23,9 @@ var hostsContainer = document.getElementById('hosts-container');
             checked[data.address] = data.docker
             if (data.docker) {
               document.getElementById(`host-${data.address}`).addEventListener('click', () => {
+                document.getElementById('hosts-container').style.width = '85%'
+                document.getElementById('hosts-container').style.zIndex = '1'
+                document.getElementById('terminal-container').style.width = '15%'
                 createTerminal(data.address)
               })
             }
@@ -63,21 +67,48 @@ function createTerminal(ip, id) {
       res.text().then((data) => {
         if (ip && !id) {
           var data = data.split('\\r\\n')
+          var flag = false
           document.getElementById(`docker-${ip}`).innerHTML = ''
           for (var i = 1; i < data.length - 1; i++) {
-            if (data[i].substring(0, 12) === 'CONTAINER ID' || data[i] === '' || data[i][0] ==='\\') {
-              console.log(i, data[i])
-            } else {
+            console.log(i, data[i])
+            if (data[i].substring(0, 12) === 'CONTAINER ID') {
+              if (i + 1 === data.length - 1) {
+                document.getElementById(`docker-${ip}`).innerHTML +=
+                  `<li class='docker-li' id='docker-${ip}-${i}'> 空</li>`
+                return
+              } else {
+                i++
+                flag = true
+                document.getElementById(`docker-${ip}`).innerHTML +=
+                  `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
+              }
+            } else if (flag) {
               document.getElementById(`docker-${ip}`).innerHTML +=
-              `<li id='docker-${ip}-${i}'>${data[i].substring(0, 12)}</li>`
+                `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
             }
           }
+          flag = false
           for (var i = 1; i < data.length - 1; i++) {
-            if (!(data[i].substring(0, 12) === 'CONTAINER ID' || data[i] === '' || data[i][0] ==='\\')) {
-              document.getElementById(`docker-${ip}-${i}`).addEventListener('click', (e) => {
-                createTerminal(ip, e.target.innerText)
-              })
+            if (data[i].substring(0, 12) === 'CONTAINER ID') {
+              if (i + 1 !== data.length - 1) {
+                i++
+                flag = true
+                enterDocker(ip, i)
+                return
+              }
             }
+            if (flag) {
+              enterDocker(ip, i)
+            }
+          }
+
+          function enterDocker (ip, i) {
+            document.getElementById(`docker-${ip}-${i}`).addEventListener('click', (e) => {
+              document.getElementById('hosts-container').style.width = '20%'
+              document.getElementById('hosts-container').style.zIndex = '0'
+              document.getElementById('terminal-container').style.width = '80%'
+              createTerminal(ip, e.target.innerText.substr(0, 12))
+            })
           }
         } else {
           data = JSON.parse(data)

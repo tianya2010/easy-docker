@@ -7,7 +7,8 @@ var pty = require('pty.js')
 var fetch = require('node-fetch')
 
 var terminals = {},
-    logs = {}
+    logs = {},
+    last = ''
 
 app.use(bodyParser.json())
 
@@ -64,18 +65,27 @@ app.post('/terminals', (req, res) => {
     if (req.body.id) {
       term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker exec -ti ${req.body.id} bash\n`)
     } else {
-      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n\n`)
+      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n`)
     }
   }
 
 
 
   term.on('data', (data) => {
+    if (data.indexOf('server API version') > 0) {
+      var start =  data.indexOf('server API version:')
+      version = data.substr(start + 20, 4)
+      term.write(`export DOCKER_API_VERSION=${version}\n`)
+      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n`)
+      if (req.body.id) {
+        term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker exec -ti ${req.body.id} bash\n`)
+      }
+    }
     logs[term.pid] += data
+    last = data
   })
 
   setTimeout(() => {
-    console.log(logs[term.pid])
     res.send({ feedback: logs[term.pid], pid: term.pid.toString()})
     res.end()
   }, 500)
@@ -85,9 +95,9 @@ app.post('/terminals', (req, res) => {
 
 app.ws('/terminals/:pid', (ws, req) => {
   var term = terminals[parseInt(req.params.pid)]
-  console.log('Connected to terminal ' + term.pid, logs[term.pid])
+  console.log('Connected to terminal ' + term.pid)
 
-  ws.send(logs[term.pid])
+  ws.send(last)
 
   term.on('data', function(data) {
     try {
@@ -100,7 +110,7 @@ app.ws('/terminals/:pid', (ws, req) => {
   })
   ws.on('close', function () {
     console.log('||| => Closed ' + term.pid)
-    process.kill(term.pid)
+    // process.kill(term.pid)
     delete terminals[term.pid]
     delete logs[term.pid]
   })
