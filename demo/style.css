@@ -4,11 +4,13 @@ body {
   margin: 0;
 }
 
-h1 {
-  text-align: center;
+#headTitle {
+  cursor: pointer;
+  padding:  0 5px;
 }
 
 #hosts-container {
+  border-top: solid 1px #ccc;
   vertical-align: top;
   position: fixed;
   height: 100%;
@@ -19,6 +21,7 @@ h1 {
 }
 
 .host {
+  padding:  0 5px;
   display: table;
   cursor: pointer;
 }

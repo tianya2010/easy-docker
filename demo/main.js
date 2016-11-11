@@ -1,4 +1,4 @@
-const hosts = 50
+const hosts = 100
 var term,
     protocol,
     socketURL,
@@ -19,18 +19,21 @@ var hostsContainer = document.getElementById('hosts-container');
   var checked = {}
 
   if (cookie) {
+    cookie = JSON.parse(cookie)
     for (var i = 5; i < hosts; i++) {
       hostsContainer.innerHTML +=
-        `<div class='host' id='host-${i}'> 10.1.10.${i} ${cookie[i] === '0' ? '无效': '可连'}</div>
+        `<div class='host' id='host-${i}'> 10.1.10.${i} ${cookie[i] === 0 ? '无效': '可连'}</div>
         <div id='docker-${i}'></div>`
     }
     for (var i = 5; i < hosts; i++) {
-      document.getElementById(`host-${i}`).addEventListener('click', (e) => {
-        document.getElementById('hosts-container').style.width = '90%'
-        document.getElementById('hosts-container').style.zIndex = '1'
-        document.getElementById('terminal-container').style.left = '90%'
-        createTerminal(e.target.id.split('-')[1])
-      })
+      if (cookie[i] === 1) {
+        document.getElementById(`host-${i}`).addEventListener('click', (e) => {
+          document.getElementById('hosts-container').style.width = '90%'
+          document.getElementById('hosts-container').style.zIndex = '1'
+          document.getElementById('terminal-container').style.left = '90%'
+          createTerminal(e.target.id.split('-')[1])
+        })
+      }
     }
   } else {
     for (var i = 5; i < hosts; i++) {
@@ -101,12 +104,12 @@ function createTerminal(ip, id) {
               flag = true
             } else if (flag && data[i][0] !== '\\') {
               document.getElementById(`docker-${ip}`).innerHTML +=
-                `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
+              `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
             }
           }
           if (document.getElementById(`docker-${ip}`).innerHTML === '') {
             document.getElementById(`docker-${ip}`).innerHTML +=
-              `<li class='docker-li' id='docker-${ip}-${i}'>空</li>`
+            `<li class='docker-li' id='docker-${ip}-${i}'>空</li>`
           }
           flag = false
           for (var i = 1; i < data.length; i++) {
