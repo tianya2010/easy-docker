@@ -51,8 +51,8 @@ app.post('/terminals', (req, res) => {
       rows = parseInt(req.query.rows),
       term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
         name: 'xterm-color',
-        cols: cols || 80,
-        rows: rows || 24,
+        cols: cols,
+        rows: rows,
         cwd: process.env.PWD,
         env: process.env
       })
@@ -68,8 +68,6 @@ app.post('/terminals', (req, res) => {
       term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n`)
     }
   }
-
-
 
   term.on('data', (data) => {
     if (data.indexOf('server API version') > 0) {
@@ -111,8 +109,8 @@ app.ws('/terminals/:pid', (ws, req) => {
   ws.on('close', function () {
     console.log('||| => Closed ' + term.pid)
     // process.kill(term.pid)
-    delete terminals[term.pid]
-    delete logs[term.pid]
+    // delete terminals[term.pid]
+    // delete logs[term.pid]
   })
 })
 

@@ -1,42 +1,66 @@
+const hosts = 50
 var term,
     protocol,
     socketURL,
     socket,
-    pid,
-    checked = {}
-
-const hosts = 100
+    pid
 
 var terminalContainer = document.getElementById('terminal-container')
 var hostsContainer = document.getElementById('hosts-container');
 
+
 (() => {
-  for (var i = 5; i < hosts; i++) {
-    hostsContainer.innerHTML +=
-      `<div class='host' id='host-${i}'> 10.1.10.${i} </div><div id='docker-${i}'></div>`
-    fetch(`/check?address=${i}`)
-      .then((res) => {
-        if(res.status !== 200) {
-          console.log('error')
-        } else {
-          res.json().then((data) => {
-            checked[data.address] = data.docker
-            if (data.docker) {
-              document.getElementById(`host-${data.address}`).addEventListener('click', () => {
-                document.getElementById('hosts-container').style.width = '85%'
-                document.getElementById('hosts-container').style.zIndex = '1'
-                document.getElementById('terminal-container').style.width = '15%'
-                createTerminal(data.address)
-              })
-            }
-            document.getElementById(`host-${data.address}`).innerText +=
-              data.docker === 0 ? '无效' : '可连'
-          })
-        }
+  document.getElementById('headTitle').addEventListener('click', function () {
+    console.log('clear')
+    Cookies.remove('dockerChecked')
+  })
+
+  var cookie = Cookies.get('dockerChecked')
+  var checked = {}
+
+  if (cookie) {
+    for (var i = 5; i < hosts; i++) {
+      hostsContainer.innerHTML +=
+        `<div class='host' id='host-${i}'> 10.1.10.${i} ${cookie[i] === '0' ? '无效': '可连'}</div>
+        <div id='docker-${i}'></div>`
+    }
+    for (var i = 5; i < hosts; i++) {
+      document.getElementById(`host-${i}`).addEventListener('click', (e) => {
+        document.getElementById('hosts-container').style.width = '90%'
+        document.getElementById('hosts-container').style.zIndex = '1'
+        document.getElementById('terminal-container').style.left = '90%'
+        createTerminal(e.target.id.split('-')[1])
       })
+    }
+  } else {
+    for (var i = 5; i < hosts; i++) {
+      hostsContainer.innerHTML +=
+        `<div class='host' id='host-${i}'> 10.1.10.${i} </div><div id='docker-${i}'></div>`
+
+      fetch(`/check?address=${i}`)
+        .then((res) => {
+          if(res.status !== 200) {
+            console.log('error')
+          } else {
+            res.json().then((data) => {
+              if (data.docker) {
+                document.getElementById(`host-${data.address}`).addEventListener('click', () => {
+                  document.getElementById('hosts-container').style.width = '90%'
+                  document.getElementById('hosts-container').style.zIndex = '1'
+                  document.getElementById('terminal-container').style.left = '90%'
+                  createTerminal(data.address)
+                })
+              }
+              document.getElementById(`host-${data.address}`).innerText +=
+                data.docker === 0 ? '无效' : '可连'
+              checked[data.address] = data.docker
+              Cookies.set('dockerChecked', checked)
+            })
+          }
+        })
+    }
   }
 })();
-
 
 createTerminal()
 function createTerminal(ip, id) {
@@ -54,8 +78,10 @@ function createTerminal(ip, id) {
   term.fit()
 
   var initialGeometry = term.proposeGeometry()
+  var cols = initialGeometry.cols
+  var rows = initialGeometry.rows
 
-  fetch(`/terminals?cols=${initialGeometry.cols}&rows=${initialGeometry.rows}`,
+  fetch(`/terminals?cols=${cols}&rows=${rows}`,
     {
       method: 'POST',
       headers: {
@@ -69,44 +95,33 @@ function createTerminal(ip, id) {
           var data = data.split('\\r\\n')
           var flag = false
           document.getElementById(`docker-${ip}`).innerHTML = ''
-          for (var i = 1; i < data.length - 1; i++) {
+          for (var i = 1; i < data.length; i++) {
             console.log(i, data[i])
             if (data[i].substring(0, 12) === 'CONTAINER ID') {
-              if (i + 1 === data.length - 1) {
-                document.getElementById(`docker-${ip}`).innerHTML +=
-                  `<li class='docker-li' id='docker-${ip}-${i}'> 空</li>`
-                return
-              } else {
-                i++
-                flag = true
-                document.getElementById(`docker-${ip}`).innerHTML +=
-                  `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
-              }
-            } else if (flag) {
+              flag = true
+            } else if (flag && data[i][0] !== '\\') {
               document.getElementById(`docker-${ip}`).innerHTML +=
                 `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
             }
           }
+          if (document.getElementById(`docker-${ip}`).innerHTML === '') {
+            document.getElementById(`docker-${ip}`).innerHTML +=
+              `<li class='docker-li' id='docker-${ip}-${i}'>空</li>`
+          }
           flag = false
-          for (var i = 1; i < data.length - 1; i++) {
+          for (var i = 1; i < data.length; i++) {
             if (data[i].substring(0, 12) === 'CONTAINER ID') {
-              if (i + 1 !== data.length - 1) {
-                i++
-                flag = true
-                enterDocker(ip, i)
-                return
-              }
-            }
-            if (flag) {
+              flag = true
+            } else if (flag && data[i][0] !== '\\') {
               enterDocker(ip, i)
             }
           }
 
           function enterDocker (ip, i) {
             document.getElementById(`docker-${ip}-${i}`).addEventListener('click', (e) => {
-              document.getElementById('hosts-container').style.width = '20%'
+              document.getElementById('hosts-container').style.width = '15%'
               document.getElementById('hosts-container').style.zIndex = '0'
-              document.getElementById('terminal-container').style.width = '80%'
+              document.getElementById('terminal-container').style.left = '15%'
               createTerminal(ip, e.target.innerText.substr(0, 12))
             })
           }
