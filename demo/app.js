@@ -46,6 +46,42 @@ app.get('/check', (req, res) => {
 })
 
 
+app.post('/restart', (req, res) => {
+  var ip = parseInt(req.query.ip)
+      id = req.query.id
+      term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+        name: 'xterm-restart',
+        cols: 100,
+        rows: 100,
+        cwd: process.env.PWD,
+        env: process.env
+      })
+
+  var fb = ''
+  term.write(`DOCKER_HOST=10.1.10.${ip}:4243 docker restart ${id}\n`)
+  term.on('data', (data) => {
+    if (data.indexOf('server API version') > 0) {
+      var start =  data.indexOf('server API version:')
+      version = data.substr(start + 20, 4)
+      term.write(`export DOCKER_API_VERSION=${version}\n`)
+      term.write(`DOCKER_HOST=10.1.10.${ip}:4243 docker restart ${id}\n`)
+    }
+    last = data
+  })
+  function end () {
+    setTimeout(() => {
+      if (last.indexOf('@') > -1 && last.indexOf('$') > -1) {
+        console.log(`restart .${ip}: ${id}`)
+        res.send({ feedback: last })
+        res.end()
+      } else {
+        end()
+      }
+    }, 1000)
+  }
+  end()
+})
+
 app.post('/terminals', (req, res) => {
   var cols = parseInt(req.query.cols),
       rows = parseInt(req.query.rows),

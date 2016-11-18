@@ -104,7 +104,10 @@ function createTerminal(ip, id) {
               flag = true
             } else if (flag && data[i][0] !== '\\') {
               document.getElementById(`docker-${ip}`).innerHTML +=
-              `<li class='docker-li' id='docker-${ip}-${i}'>${data[i]}</li>`
+              `<li class='docker-li'>
+                <button id='restart-${ip}-${i}' data='${data[i]}'>重启</button>
+                <span id='docker-${ip}-${i}'>${data[i]}</span>
+              </li>`
             }
           }
           if (document.getElementById(`docker-${ip}`).innerHTML === '') {
@@ -121,6 +124,21 @@ function createTerminal(ip, id) {
           }
 
           function enterDocker (ip, i) {
+            document.getElementById(`restart-${ip}-${i}`).addEventListener('click', (e) => {
+              var id = e.target.getAttribute('data').split(' ')[0]
+              document.getElementById('wait').style.display = 'flex'
+              fetch(`/restart?ip=${ip}&id=${id}`, { method: 'POST' })
+              .then((res) => {
+                if (res.statusCode >= 400) {
+                  console.error('ERROR')
+                }
+                return res.json()
+              }).then((data) => {
+                console.log(data.feedback)
+                document.getElementById(`docker-${ip}-${i}`).click()
+                document.getElementById('wait').style.display = 'none'
+              })
+            })
             document.getElementById(`docker-${ip}-${i}`).addEventListener('click', (e) => {
               document.getElementById('hosts-container').style.width = '15%'
               document.getElementById('hosts-container').style.zIndex = '0'
