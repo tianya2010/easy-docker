@@ -1,0 +1,28 @@
+{
+  "name": "easydocker",
+  "version": "1.0.0",
+  "description": "remote ssh docker and list by terminal in browers",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon --exec bash -c 'node app'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lqs469/easy-docker.git"
+  },
+  "author": "lqs469",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lqs469/easy-docker/issues"
+  },
+  "homepage": "https://github.com/lqs469/easy-docker#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "express-ws": "^2.0.0",
+    "node-fetch": "^1.6.3",
+    "nodemon": "^1.11.0",
+    "pty": "0.0.0",
+    "xterm": "^2.1.0"
+  }
+}

@@ -1,0 +1,76 @@
+body {
+  font-family: monospace;
+  color: #333;
+  margin: 0;
+}
+
+#wait {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, .9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+#headTitle {
+  cursor: pointer;
+  padding:  0 5px;
+}
+
+#hosts-container {
+  border-top: solid 1px #ccc;
+  vertical-align: top;
+  position: fixed;
+  top: 45px;
+  left: 0;
+  bottom: 0;
+  width: 15%;
+  overflow: auto;
+  transition: all .1s ease;
+}
+
+.host {
+  padding:  0 5px;
+  display: table;
+  cursor: pointer;
+}
+
+.docker-li {
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+  list-style: none;
+  border-bottom: solid 1px #ccc;
+  border-top: solid 1px #ccc;
+  margin: 0 0 -1px;
+  padding: 3px 0;
+  background: #eceef1;
+}
+
+.docker-li:hover {
+  background: #4FC1E9;
+}
+
+#terminal-container {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height:100%;
+  width: 85%;
+  transition: all .1s ease;
+}
+
+#terminal-container .terminal {
+  background-color: #111;
+  color: #fafafa;
+  padding: 2px;
+}
+
+#terminal-container .terminal:focus .terminal-cursor {
+  background-color: #fafafa;
+}
