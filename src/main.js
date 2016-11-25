@@ -1,12 +1,14 @@
-const hosts = 100
-var term,
-    protocol,
-    socketURL,
-    socket,
-    pid
+// const hosts = 100
+const defaultAdress = [
+  'localhost'
+]
+var term
+var protocol
+var socketURL
+var socket
 
 var terminalContainer = document.getElementById('terminal-container')
-var hostsContainer = document.getElementById('hosts-container');
+var hostsContainer = document.getElementById('hosts-container')
 
 terminalContainer.addEventListener('click', () => {
   document.getElementById('hosts-container').style.width = '15%'
@@ -14,6 +16,7 @@ terminalContainer.addEventListener('click', () => {
   document.getElementById('terminal-container').style.left = '15%'
 });
 
+// Check Cookies if have ip data
 (() => {
   document.getElementById('headTitle').addEventListener('click', function () {
     console.log('clear')
@@ -25,12 +28,14 @@ terminalContainer.addEventListener('click', () => {
 
   if (cookie) {
     cookie = JSON.parse(cookie)
-    for (var i = 5; i < hosts; i++) {
-      hostsContainer.innerHTML +=
-        `<div class='host' id='host-${i}'> 10.1.10.${i} ${cookie[i] === 0 ? '无效': '可连'}</div>
-        <div id='docker-${i}'></div>`
+    for (var i in cookie) {
+      hostsContainer.innerHTML += `
+        <div class='host' id='host-${i}'>
+          ${i} ${cookie[i] === 0 ? '无效': '可连'}
+        </div>
+        <div id='docker-${i}' />`
     }
-    for (var i = 5; i < hosts; i++) {
+    for (i in cookie) {
       if (cookie[i] === 1) {
         document.getElementById(`host-${i}`).addEventListener('click', (e) => {
           document.getElementById('hosts-container').style.width = '90%'
@@ -41,9 +46,12 @@ terminalContainer.addEventListener('click', () => {
       }
     }
   } else {
-    for (var i = 5; i < hosts; i++) {
-      hostsContainer.innerHTML +=
-        `<div class='host' id='host-${i}'> 10.1.10.${i} </div><div id='docker-${i}'></div>`
+    defaultAdress.map((i) => {
+      hostsContainer.innerHTML += `
+        <div class='host' id='host-${i}'>
+          ${i}
+        </div>
+        <div id='docker-${i}' />`
 
       fetch(`/check?address=${i}`)
         .then((res) => {
@@ -66,9 +74,9 @@ terminalContainer.addEventListener('click', () => {
             })
           }
         })
-    }
+    })
   }
-})();
+})()
 
 createTerminal()
 function createTerminal(ip, id) {
@@ -89,84 +97,84 @@ function createTerminal(ip, id) {
   var cols = initialGeometry.cols
   var rows = initialGeometry.rows
 
-  fetch(`/terminals?cols=${cols}&rows=${rows}`,
-    {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ ip, id })
-    }).then((res) => {
-      res.text().then((data) => {
-        if (ip && !id) {
-          var data = data.split('\\r\\n')
-          var flag = false
-          document.getElementById(`docker-${ip}`).innerHTML = ''
-          for (var i = 1; i < data.length; i++) {
-            console.log(i, data[i])
-            if (data[i].substring(0, 12) === 'CONTAINER ID') {
-              flag = true
-            } else if (flag && data[i][0] !== '\\') {
-              document.getElementById(`docker-${ip}`).innerHTML +=
-              `<li class='docker-li'>
-                <button id='restart-${ip}-${i}'
-                  data='${data[i].substring(0, 12)}'>重启</button>
-                <span id='docker-${ip}-${i}'>${data[i]}</span>
-              </li>`
-            }
-          }
-          if (document.getElementById(`docker-${ip}`).innerHTML === '') {
+  fetch(`/terminals?cols=${cols}&rows=${rows}`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ ip, id })
+  }).then((res) => {
+    res.json().then((data) => {
+      if (ip && !data.id) {
+        data = JSON.stringify(data.feedback).split('\\r\\n')
+        var flag = false
+        document.getElementById(`docker-${ip}`).innerHTML = ''
+        for (var i = 1; i < data.length; i++) {
+          console.log(i, data[i])
+          if (data[i].substring(0, 12) === 'CONTAINER ID') {
+            flag = true
+          } else if (flag && data[i][0] !== '\\') {
+            var id = data[i].substring(0, 12)
             document.getElementById(`docker-${ip}`).innerHTML +=
-            `<li class='docker-li' id='docker-${ip}-${i}'>空</li>`
+            `<li class='docker-li'>
+              <button id='restart-${ip}-${id}'
+                data='${id}'>
+                重启
+              </button>
+              <span id='docker-${ip}-${id}'>
+                ${data[i]}
+              </span>
+            </li>`
           }
-          flag = false
-          for (var i = 1; i < data.length; i++) {
-            if (data[i].substring(0, 12) === 'CONTAINER ID') {
-              flag = true
-            } else if (flag && data[i][0] !== '\\') {
-              enterDocker(ip, i)
-            }
-          }
-
-          function enterDocker (ip, i) {
-            document.getElementById(`restart-${ip}-${i}`).addEventListener('click', (e) => {
-              var id = e.target.getAttribute('data')
-              document.getElementById('wait').style.display = 'flex'
-              fetch(`/restart?ip=${ip}&id=${id}`, { method: 'POST' })
-              .then((res) => {
-                if (res.statusCode >= 400) {
-                  console.error('ERROR')
-                }
-                return res.json()
-              }).then((data) => {
-                document.getElementById(`docker-${ip}-${i}`).click()
-                document.getElementById('wait').style.display = 'none'
-              })
-            })
-            document.getElementById(`docker-${ip}-${i}`).addEventListener('click', (e) => {
-              document.getElementById('hosts-container').style.width = '15%'
-              document.getElementById('hosts-container').style.zIndex = '0'
-              document.getElementById('terminal-container').style.left = '15%'
-              createTerminal(ip, e.target.innerText.substr(0, 12))
-            })
-          }
-
-          createTerminal()
-        } else {
-          data = JSON.parse(data)
-          window.pid = data.pid
-          socketURL += data.pid
-          console.log('socketURL:', socketURL)
-
-          // webSocket connect
-          socket = new WebSocket(socketURL)
-          socket.onopen = runRealTerminal
-          socket.onclose = errorTerminal
-          socket.onerror = errorTerminal
         }
-      })
+        if (document.getElementById(`docker-${ip}`).innerHTML === '') {
+          document.getElementById(`docker-${ip}`).innerHTML +=
+          `<li class='docker-li' id='docker-${ip}-${i}'>空</li>`
+        }
+
+        flag = false
+        for (i = 1; i < data.length; i++) {
+          if (data[i].substring(0, 12) === 'CONTAINER ID') {
+            flag = true
+          } else if (flag && data[i][0] !== '\\') {
+            document.getElementById(`restart-${ip}-${data[i].substring(0, 12)}`)
+              .addEventListener('click', (e) => {
+                var did = e.target.getAttribute('data')
+                document.getElementById('wait').style.display = 'flex'
+                fetch(`/restart?ip=${ip}&id=${did}`, { method: 'POST' })
+                .then((res) => {
+                  if (res.statusCode >= 400) {
+                    console.error('ERROR')
+                  }
+                  return res.json()
+                }).then((data) => {
+                  document.getElementById('wait').style.display = 'none'
+                  document.getElementById(`docker-${ip}-${data.id}`).click()
+                })
+              })
+            document.getElementById(`docker-${ip}-${data[i].substring(0, 12)}`)
+              .addEventListener('click', (e) => {
+                document.getElementById('hosts-container').style.width = '15%'
+                document.getElementById('hosts-container').style.zIndex = '0'
+                document.getElementById('terminal-container').style.left = '15%'
+                createTerminal(ip, e.target.innerText.substring(0, 12))
+              })
+          }
+        }
+      } else {
+        window.pid = data.pid
+        socketURL += data.pid
+        console.log('socketURL:', socketURL)
+
+        // webSocket connect
+        socket = new WebSocket(socketURL)
+        socket.onopen = runRealTerminal
+        socket.onclose = errorTerminal
+        socket.onerror = errorTerminal
+      }
     })
+  })
 
   function runRealTerminal() {
     term.attach(socket)
@@ -192,7 +200,7 @@ function createTerminal(ip, id) {
       }
     })
 
-    term.on('paste', function (data, ev) {
+    term.on('paste', function (data) {
       term.write(data)
     })
   }

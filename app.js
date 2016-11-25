@@ -2,14 +2,16 @@ var express = require('express')
 var path = require('path')
 var app = express()
 var bodyParser = require('body-parser')
-var expressWs = require('express-ws')(app)
+var expressWs = require('express-ws')
 var os = require('os')
 var pty = require('pty.js')
 var fetch = require('node-fetch')
 
 var terminals = {},
-    logs = {},
-    last = ''
+  logs = {},
+  last = ''
+
+expressWs(app)
 
 app.use(bodyParser.json())
 
@@ -28,15 +30,14 @@ app.get('/main.js', (req, res) => {
 })
 
 app.get('/check', (req, res) => {
-  var portCheck = {}
-  fetch(`http://10.1.10.${req.query.address}:4243`)
-    .then((response) => {
+  fetch(`http://${req.query.address}:4243`)
+    .then(() => {
       res.send({
         address : req.query.address,
         docker  : 1
       })
       res.end()
-    }).catch((response) => {
+    }).catch(() => {
       res.send({
         address : req.query.address,
         docker  : 0
@@ -47,24 +48,23 @@ app.get('/check', (req, res) => {
 
 
 app.post('/restart', (req, res) => {
-  var ip = parseInt(req.query.ip)
-      id = req.query.id
-      term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
-        name: 'xterm-restart',
-        cols: 100,
-        rows: 100,
-        cwd: process.env.PWD,
-        env: process.env
-      })
+  var ip = req.query.ip
+  var id = req.query.id
+  var term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+    name : 'xterm-restart',
+    cols : 100,
+    rows : 100,
+    cwd  : process.env.PWD,
+    env  : process.env
+  })
 
-  var fb = ''
-  term.write(`DOCKER_HOST=10.1.10.${ip}:4243 docker restart ${id}\n`)
+  term.write(`DOCKER_HOST=${ip}:4243 docker restart ${id}\n`)
   term.on('data', (data) => {
     if (data.indexOf('server API version') > 0) {
       var start =  data.indexOf('server API version:')
-      version = data.substr(start + 20, 4)
+      var version = data.substr(start + 20, 4)
       term.write(`export DOCKER_API_VERSION=${version}\n`)
-      term.write(`DOCKER_HOST=10.1.10.${ip}:4243 docker restart ${id}\n`)
+      term.write(`DOCKER_HOST=${ip}:4243 docker restart ${id}\n`)
     }
     last = data
   })
@@ -72,7 +72,7 @@ app.post('/restart', (req, res) => {
     setTimeout(() => {
       if (last.indexOf('@') > -1 && last.indexOf('$') > -1) {
         console.log(`restart .${ip}: ${id}`)
-        res.send({ feedback: last })
+        res.send({ feedback: last, id })
         res.end()
       } else {
         end()
@@ -83,36 +83,38 @@ app.post('/restart', (req, res) => {
 })
 
 app.post('/terminals', (req, res) => {
-  var cols = parseInt(req.query.cols),
-      rows = parseInt(req.query.rows),
-      term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
-        name: 'xterm-color',
-        cols: cols,
-        rows: rows,
-        cwd: process.env.PWD,
-        env: process.env
-      })
+  var cols = parseInt(req.query.cols)
+  var rows = parseInt(req.query.rows)
+  var ip = req.body.ip
+  var id = req.body.id
+  var term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+    name : 'xterm-color',
+    cols : cols,
+    rows : rows,
+    cwd  : process.env.PWD,
+    env  : process.env
+  })
 
   console.log('Created terminal with PID: ' + term.pid)
   terminals[term.pid] = term
   logs[term.pid] = ''
 
-  if (req.body.ip) {
-    if (req.body.id) {
-      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker exec -ti ${req.body.id} bash\n`)
+  if (ip) {
+    if (id) {
+      term.write(`DOCKER_HOST=${ip}:4243 docker exec -ti ${id} bash\n`)
     } else {
-      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n`)
+      term.write(`DOCKER_HOST=${ip}:4243 docker ps\n`)
     }
   }
 
   term.on('data', (data) => {
     if (data.indexOf('server API version') > 0) {
       var start =  data.indexOf('server API version:')
-      version = data.substr(start + 20, 4)
+      var version = data.substr(start + 20, 4)
       term.write(`export DOCKER_API_VERSION=${version}\n`)
-      term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker ps\n`)
-      if (req.body.id) {
-        term.write(`DOCKER_HOST=10.1.10.${req.body.ip}:4243 docker exec -ti ${req.body.id} bash\n`)
+      term.write(`DOCKER_HOST=${ip}:4243 docker ps\n`)
+      if (id) {
+        term.write(`DOCKER_HOST=${ip}:4243 docker exec -ti ${id} bash\n`)
       }
     }
     logs[term.pid] += data
@@ -120,7 +122,7 @@ app.post('/terminals', (req, res) => {
   })
 
   setTimeout(() => {
-    res.send({ feedback: logs[term.pid], pid: term.pid.toString()})
+    res.send({ feedback: logs[term.pid], pid: term.pid.toString(), id })
     res.end()
   }, 500)
 })
@@ -134,9 +136,8 @@ app.ws('/terminals/:pid', (ws, req) => {
   ws.send(last)
 
   term.on('data', function(data) {
-    try {
-      ws.send(data)
-    } catch (ex) {
+    try { ws.send(data) } catch (ex) {
+      console.error(ex)
     }
   })
   ws.on('message', function(msg) {
@@ -150,8 +151,8 @@ app.ws('/terminals/:pid', (ws, req) => {
   })
 })
 
-var port = process.env.PORT || 3003,
-    host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0'
+var port = process.env.PORT || 3003
+var host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0'
 
 console.log('App listening to http://' + host + ':' + port)
 app.listen(port, host)
