@@ -204,6 +204,22 @@ document.getElementById('settings').addEventListener('click', () => {
   }
 })
 
+document.getElementById('extend').addEventListener('click', () => {
+  if (terminalContainer.style.width !== '100%') {
+    terminalContainer.style.width = '100%'
+    terminalContainer.style.top = '60px'
+    document.getElementById('extend').className = 'fui-arrow-right'
+    document.getElementById('r').style.top = '15px'
+    document.getElementById('r').bottom = 'auto'
+  } else {
+    terminalContainer.style.width = '79%'
+    terminalContainer.style.top = '1%'
+    document.getElementById('extend').className = 'fui-arrow-left'
+    document.getElementById('r').style.top = 'auto'
+    document.getElementById('r').style.bottom = '5px'
+  }
+})
+
 document.getElementById('ip-input').addEventListener('blur', () => {
   document.getElementById('addInput').style.left = '-100%'
   var ip = document.getElementById('ip-input').value
