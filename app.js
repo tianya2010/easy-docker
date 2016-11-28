@@ -16,6 +16,7 @@ expressWs(app)
 app.use(bodyParser.json())
 
 app.use('/xterm', express.static(path.join(__dirname, 'node_modules/xterm/')))
+app.use('/flat-ui', express.static(path.join(__dirname, 'node_modules/flat-ui/')))
 
 app.get('/', function(req, res){
   res.sendFile(path.join(__dirname, 'index.html'))

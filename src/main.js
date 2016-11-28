@@ -8,17 +8,13 @@ var socketURL
 var socket
 
 var terminalContainer = document.getElementById('terminal-container')
-var hostsContainer = document.getElementById('hosts-container')
-
-terminalContainer.addEventListener('click', () => {
-  document.getElementById('hosts-container').style.width = '15%'
-  document.getElementById('hosts-container').style.zIndex = '0'
-  document.getElementById('terminal-container').style.left = '15%'
-});
+var hostsContainer = document.getElementById('hosts-container');
 
 // Check Cookies if have ip data
 (() => {
-  document.getElementById('headTitle').addEventListener('click', function () {
+
+
+  document.getElementById('clearCookies').addEventListener('click', function () {
     console.log('clear')
     Cookies.remove('dockerChecked')
   })
@@ -26,21 +22,19 @@ terminalContainer.addEventListener('click', () => {
   var cookie = Cookies.get('dockerChecked')
   var checked = {}
 
+  console.log(cookie)
   if (cookie) {
     cookie = JSON.parse(cookie)
     for (var i in cookie) {
       hostsContainer.innerHTML += `
         <div class='host' id='host-${i}'>
-          ${i} ${cookie[i] === 0 ? '无效': '可连'}
+          ${i} ${cookie[i] === 0 ? '[无效]': '[可连]'}
         </div>
         <div id='docker-${i}' />`
     }
     for (i in cookie) {
       if (cookie[i] === 1) {
         document.getElementById(`host-${i}`).addEventListener('click', (e) => {
-          document.getElementById('hosts-container').style.width = '90%'
-          document.getElementById('hosts-container').style.zIndex = '1'
-          document.getElementById('terminal-container').style.left = '90%'
           createTerminal(e.target.id.split('-')[1])
         })
       }
@@ -52,7 +46,6 @@ terminalContainer.addEventListener('click', () => {
           ${i}
         </div>
         <div id='docker-${i}' />`
-
       fetch(`/check?address=${i}`)
         .then((res) => {
           if(res.status !== 200) {
@@ -61,14 +54,11 @@ terminalContainer.addEventListener('click', () => {
             res.json().then((data) => {
               if (data.docker) {
                 document.getElementById(`host-${data.address}`).addEventListener('click', () => {
-                  document.getElementById('hosts-container').style.width = '90%'
-                  document.getElementById('hosts-container').style.zIndex = '1'
-                  document.getElementById('terminal-container').style.left = '90%'
                   createTerminal(data.address)
                 })
               }
               document.getElementById(`host-${data.address}`).innerText +=
-                data.docker === 0 ? '无效' : '可连'
+                data.docker === 0 ? '[无效]' : '[可连]'
               checked[data.address] = data.docker
               Cookies.set('dockerChecked', checked)
             })
@@ -118,13 +108,12 @@ function createTerminal(ip, id) {
             var id = data[i].substring(0, 12)
             document.getElementById(`docker-${ip}`).innerHTML +=
             `<li class='docker-li'>
-              <button id='restart-${ip}-${id}'
-                data='${id}'>
+              <small id='docker-${ip}-${id}' data='${data[i].substring(0, 12)}'>
+                ${data[i].substring(20)}
+              </small>
+              <button class="btn btn-primary" id='restart-${ip}-${id}' data='${id}'>
                 重启
               </button>
-              <span id='docker-${ip}-${id}'>
-                ${data[i]}
-              </span>
             </li>`
           }
         }
@@ -155,10 +144,7 @@ function createTerminal(ip, id) {
               })
             document.getElementById(`docker-${ip}-${data[i].substring(0, 12)}`)
               .addEventListener('click', (e) => {
-                document.getElementById('hosts-container').style.width = '15%'
-                document.getElementById('hosts-container').style.zIndex = '0'
-                document.getElementById('terminal-container').style.left = '15%'
-                createTerminal(ip, e.target.innerText.substring(0, 12))
+                createTerminal(ip, e.target.getAttribute('data'))
               })
           }
         }
@@ -205,3 +191,55 @@ function createTerminal(ip, id) {
     })
   }
 }
+
+document.getElementById('settings').addEventListener('click', () => {
+  if (terminalContainer.style.right !== '-20%') {
+    terminalContainer.style.right = '-20%'
+    hostsContainer.style.left = '20%'
+    document.getElementById('settingsContainer').style.left = '0'
+  } else {
+    terminalContainer.style.right = '0'
+    hostsContainer.style.left = '0'
+    document.getElementById('settingsContainer').style.left = '-20%'
+  }
+})
+
+document.getElementById('ip-input').addEventListener('blur', () => {
+  document.getElementById('addInput').style.left = '-100%'
+  var ip = document.getElementById('ip-input').value
+  if (ip && ip.split('.').length === 4) {
+    fetch(`/check?address=${ip}`)
+    .then((res) => {
+      if(res.status !== 200) {
+        console.log('error')
+      } else {
+        res.json().then((data) => {
+          var cookie = Cookies.getJSON('dockerChecked')
+          if (!cookie[ip]) {
+            cookie[ip] = data.docker
+            hostsContainer.innerHTML += `
+              <div class='host' id='host-${ip}'>
+                ${ip}
+              </div>
+              <div id='docker-${ip}' />`
+            if (data.docker) {
+              document.getElementById(`host-${data.address}`)
+              .addEventListener('click', () => {
+                createTerminal(data.address)
+              })
+            }
+            document.getElementById(`host-${data.address}`).innerText +=
+              data.docker === 0 ? '[无效]' : '[可连]'
+            Cookies.set('dockerChecked', cookie)
+          }
+        })
+      }
+    })
+  }
+  document.getElementById('ip-input').value = ''
+})
+
+document.getElementById('addHost').addEventListener('click', () => {
+  document.getElementById('addInput').style.left = '100px'
+  document.getElementById('ip-input').focus()
+})

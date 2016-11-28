@@ -10,67 +10,203 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 1000;
   background: rgba(255, 255, 255, .9);
   display: none;
   justify-content: center;
   align-items: center;
 }
 
-#headTitle {
+#settingsContainer {
+  position: fixed;
+  width: 20%;
+  height: 100%;
+  left: -20%;
+  background: #34495e;
+  color: #ddd;
+  transition: all .1s ease;
+  text-align: center;
+}
+
+.settings-btn {
   cursor: pointer;
-  padding:  0 5px;
+  line-height: 30px;
+}
+
+.settings-btn:hover {
+  color: #fff;
+}
+
+.settings-header {
+  color: #888;
+  font-size: 20px;
+  font-weight: 100;
+  line-height: 1.5;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.header {
+  font-size: 30px;
+  line-height: 1.5;
+  font-weight: 100;
+  cursor: pointer;
+  text-align: center;
+  margin-bottom: 0;
+  padding: 10px;
+  background: #eceef1;
+}
+
+#settings {
+  position: absolute;
+  line-height: 60px;
+  left: 15px;
+  top: 0;
+  cursor: pointer;
+}
+
+#extend {
+  position: absolute;
+  line-height: 60px;
+  right: 15px;
+  top: 0;
+  cursor: pointer;
 }
 
 #hosts-container {
-  border-top: solid 1px #ccc;
   vertical-align: top;
   position: fixed;
-  top: 45px;
+  top: 0;
   left: 0;
   bottom: 0;
-  width: 15%;
+  width: 20%;
   overflow: auto;
+  border-right: solid 1px #ddd;
+  padding-bottom: 80px;
   transition: all .1s ease;
 }
 
 .host {
-  padding:  0 5px;
-  display: table;
+  padding: 5px 0 5px 15px;
+  display: block;
   cursor: pointer;
+  color: #000;
+  border-bottom: solid 1px #eceef1;
+}
+
+.host:hover {
+  color: #888;
 }
 
 .docker-li {
+  box-shadow: inset 0 0 100px #eceef1;
   cursor: pointer;
-  white-space: nowrap;
-  font-size: 12px;
   list-style: none;
-  border-bottom: solid 1px #ccc;
-  border-top: solid 1px #ccc;
+  border-bottom: solid 1px #ddd;
+  border-top: solid 1px #ddd;
   margin: 0 0 -1px;
-  padding: 3px 0;
-  background: #eceef1;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  color: #888;
+  word-break: break-all;
+  min-height: 60px;
+  transition: all .2s ease;
+  font-size: .9em;
 }
 
 .docker-li:hover {
-  background: #4FC1E9;
+  background: #eceef1;
+}
+
+.docker-li > button {
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  /*align-self: flex-start;*/
 }
 
 #terminal-container {
   position: fixed;
   right: 0;
-  top: 0;
-  height:100%;
-  width: 85%;
+  top: 10px;
+  bottom: 10px;
+  width: 79%;
   transition: all .1s ease;
 }
 
-#terminal-container .terminal {
-  background-color: #111;
-  color: #fafafa;
-  padding: 2px;
+#addHost {
+  cursor: pointer;
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  background: #E74C3C;
+  color: #fff;
+  border-radius: 50%;
+  z-index: 100;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  box-shadow: -2px 2px 5px #888;
 }
 
-#terminal-container .terminal:focus .terminal-cursor {
-  background-color: #fafafa;
+#addHost:hover {
+  background: #C0392B;
+}
+
+#addInput {
+  padding: 16px;
+  position: fixed;
+  bottom: 15px;
+  left: -100%;
+  width: 260px;
+  height: 85px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 5px 40px #333;
+}
+
+.addInput-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 40px;
+  line-height: 40px;
+  background: #E74C3C;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+  padding: 0 16px;
+}
+
+#addInput input {
+  height: 30px;
+  width: 180px;
+  padding: 3px 5px;
+  font-size: 15px;
+}
+
+#addInput button {
+  cursor: pointer;
+  height: 40px;
+  width: 50px;
+  padding: 0;
+}
+
+#addInput::after {
+  content: ' ';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 20px;
+  left: -8px;
+  background: #fff;
+  transform: rotateZ(45deg);
 }

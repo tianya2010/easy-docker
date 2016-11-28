@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="xterm/dist/xterm.css" />
     <link rel="stylesheet" href="xterm/addons/fullscreen/fullscreen.css" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="flat-ui/css/flat-ui.css">
     <script src="https://cdn.bootcss.com/fetch/1.0.0/fetch.min.js"></script>
     <script src="https://cdn.bootcss.com/js-cookie/latest/js.cookie.min.js"></script>
     <script src="xterm/dist/xterm.js" ></script>
@@ -14,12 +15,25 @@
   </head>
   <body>
     <div id='wait'>
-      <h1>请稍等...</h1>
+      <h2>请稍等...</h2>
     </div>
-    <h3><span id='headTitle' title='点我清空缓存'>Remote docker</span></h3>
+    <div id='settingsContainer'>
+      <div class='settings-header'>设置</div>
+      <div class='settings-btn' id='clearCookies'>清空缓存</div>
+    </div>
     <div id='hosts-container'>
+      <span id='settings' class="fui-list"></span>
+      <p class='header' onclick="location.reload()">Easy docker</p>
+      <span id='extend' class="fui-arrow-left"></span>
     </div>
     <div id='terminal-container'></div>
+    <span id='addHost' class='fui-plus'></span>
+    <div id=addInput>
+      <div class='addInput-header'>添加新地址</div>
+      <input type='text' id='ip-input'
+        placeholder="例如: 10.1.10.36" />
+      <button class="btn btn-embossed btn-inverse">添加</button>
+    </div>
     <script src="main.js" defer ></script>
   </body>
 </html>
