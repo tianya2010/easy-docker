@@ -3,7 +3,7 @@
 This repo is a tool to handle docker by terminal in the browser.
 It provides fully featured terminals to users and create great development experiences.
 
-[操作示例](./easydocker.gif)
+<img src="./easydocker.gif" />
 
 ## Use libraries
 - [Xterm.js](https://github.com/sourcelair/xterm.js) is a terminal front-end component written in JavaScript that works in the browser.
