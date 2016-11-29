@@ -178,8 +178,8 @@ body {
   top: 0;
   left: 0;
   width: 260px;
-  height: 40px;
-  line-height: 40px;
+  height: 50px;
+  line-height: 50px;
   background: #E74C3C;
   color: #fff;
   border-radius: 10px 10px 0 0;
@@ -188,16 +188,14 @@ body {
 
 #addInput input {
   height: 30px;
-  width: 180px;
+  width: 100%;
+  border: 0;
   padding: 3px 5px;
-  font-size: 15px;
+  font-size: 17px;
 }
 
-#addInput button {
-  cursor: pointer;
-  height: 40px;
-  width: 50px;
-  padding: 0;
+#addInput input:focus {
+  outline: 0;
 }
 
 #addInput::after {

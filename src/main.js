@@ -22,7 +22,6 @@ var hostsContainer = document.getElementById('hosts-container');
   var cookie = Cookies.get('dockerChecked')
   var checked = {}
 
-  console.log(cookie)
   if (cookie) {
     cookie = JSON.parse(cookie)
     for (var i in cookie) {
@@ -220,9 +219,7 @@ document.getElementById('extend').addEventListener('click', () => {
   }
 })
 
-document.getElementById('ip-input').addEventListener('blur', () => {
-  document.getElementById('addInput').style.left = '-100%'
-  var ip = document.getElementById('ip-input').value
+function submitAddress (ip) {
   if (ip && ip.split('.').length === 4) {
     fetch(`/check?address=${ip}`)
     .then((res) => {
@@ -252,6 +249,18 @@ document.getElementById('ip-input').addEventListener('blur', () => {
       }
     })
   }
+}
+
+document.getElementById('ip-input').addEventListener('keyup', (e) => {
+  if (e.keyCode === 13) {
+    var ip = document.getElementById('ip-input').value
+    submitAddress(ip)
+    document.getElementById('ip-input').value = ''
+  }
+})
+
+document.getElementById('ip-input').addEventListener('blur', () => {
+  document.getElementById('addInput').style.left = '-100%'
   document.getElementById('ip-input').value = ''
 })
 
