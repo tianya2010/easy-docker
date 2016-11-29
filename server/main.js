@@ -1,11 +1,11 @@
 var express = require('express')
 var path = require('path')
-var app = express()
 var bodyParser = require('body-parser')
 var expressWs = require('express-ws')
 var os = require('os')
 var pty = require('pty.js')
 var fetch = require('node-fetch')
+var app = express()
 
 var terminals = {},
   logs = {},
@@ -15,19 +15,19 @@ expressWs(app)
 
 app.use(bodyParser.json())
 
-app.use('/xterm', express.static(path.join(__dirname, 'node_modules/xterm/')))
-app.use('/flat-ui', express.static(path.join(__dirname, 'node_modules/flat-ui/')))
+app.use('/xterm', express.static(path.join(__dirname, '../node_modules/xterm/')))
+app.use('/flat-ui', express.static(path.join(__dirname, '../node_modules/flat-ui/')))
 
 app.get('/', function(req, res){
-  res.sendFile(path.join(__dirname, 'index.html'))
+  res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
 app.get('/style.css', (req, res) => {
-  res.sendFile(path.join(__dirname, '/src/style.css'))
+  res.sendFile(path.join(__dirname, '../src/style.css'))
 })
 
 app.get('/main.js', (req, res) => {
-  res.sendFile(path.join(__dirname, '/src/main.js'))
+  res.sendFile(path.join(__dirname, '../src/main.js'))
 })
 
 app.get('/check', (req, res) => {
@@ -96,7 +96,7 @@ app.post('/terminals', (req, res) => {
     env  : process.env
   })
 
-  console.log('Created terminal with PID: ' + term.pid)
+  // console.log('Created terminal with PID: ' + term.pid)
   terminals[term.pid] = term
   logs[term.pid] = ''
 
@@ -132,7 +132,7 @@ app.post('/terminals', (req, res) => {
 
 app.ws('/terminals/:pid', (ws, req) => {
   var term = terminals[parseInt(req.params.pid)]
-  console.log('Connected to terminal ' + term.pid)
+  // console.log('Connected to terminal ' + term.pid)
 
   ws.send(last)
 
@@ -145,15 +145,11 @@ app.ws('/terminals/:pid', (ws, req) => {
     term.write(msg)
   })
   ws.on('close', function () {
-    console.log('||| => Closed ' + term.pid)
+    // console.log('||| => Closed ' + term.pid)
     // process.kill(term.pid)
     // delete terminals[term.pid]
     // delete logs[term.pid]
   })
 })
 
-var port = process.env.PORT || 3003
-var host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0'
-
-console.log('App listening to http://' + host + ':' + port)
-app.listen(port, host)
+module.exports = app

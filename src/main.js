@@ -1,29 +1,23 @@
-// const hosts = 100
-const defaultAdress = [
-  'localhost'
-]
+const defaultAdress = [ 'localhost' ]
 var term
 var protocol
 var socketURL
 var socket
 
 var terminalContainer = document.getElementById('terminal-container')
-var hostsContainer = document.getElementById('hosts-container');
+var hostsContainer = document.getElementById('hosts-container')
+
+document.getElementById('clearCookies').addEventListener('click', function () {
+  console.log('clear')
+  Cookies.remove('dockerChecked')
+  location.reload()
+})
 
 // Check Cookies if have ip data
-(() => {
-
-
-  document.getElementById('clearCookies').addEventListener('click', function () {
-    console.log('clear')
-    Cookies.remove('dockerChecked')
-  })
-
-  var cookie = Cookies.get('dockerChecked')
-  var checked = {}
+;(() => {
+  var cookie = Cookies.getJSON('dockerChecked')
 
   if (cookie) {
-    cookie = JSON.parse(cookie)
     for (var i in cookie) {
       hostsContainer.innerHTML += `
         <div class='host' id='host-${i}'>
@@ -34,11 +28,18 @@ var hostsContainer = document.getElementById('hosts-container');
     for (i in cookie) {
       if (cookie[i] === 1) {
         document.getElementById(`host-${i}`).addEventListener('click', (e) => {
-          createTerminal(e.target.id.split('-')[1])
+          if (document.getElementById(`docker-${e.target.id.split('-')[1]}`)
+          .children.length > 0) {
+            document.getElementById(`docker-${e.target.id.split('-')[1]}`)
+            .innerHTML = ''
+          } else {
+            createTerminal(e.target.id.split('-')[1])
+          }
         })
       }
     }
   } else {
+    var hostStatus = {}
     defaultAdress.map((i) => {
       hostsContainer.innerHTML += `
         <div class='host' id='host-${i}'>
@@ -46,28 +47,28 @@ var hostsContainer = document.getElementById('hosts-container');
         </div>
         <div id='docker-${i}' />`
       fetch(`/check?address=${i}`)
-        .then((res) => {
-          if(res.status !== 200) {
-            console.log('error')
-          } else {
-            res.json().then((data) => {
-              if (data.docker) {
-                document.getElementById(`host-${data.address}`).addEventListener('click', () => {
-                  createTerminal(data.address)
-                })
-              }
-              document.getElementById(`host-${data.address}`).innerText +=
-                data.docker === 0 ? '[无效]' : '[可连]'
-              checked[data.address] = data.docker
-              Cookies.set('dockerChecked', checked)
-            })
-          }
-        })
+      .then((res) => {
+        if (res.status !== 200) {
+          console.log('error')
+        } else {
+          res.json().then((data) => {
+            if (data.docker) {
+              document.getElementById(`host-${data.address}`)
+              .addEventListener('click', () => {
+                createTerminal(data.address)
+              })
+            }
+            document.getElementById(`host-${data.address}`).innerText +=
+              data.docker === 0 ? '[无效]' : '[可连]'
+            hostStatus[data.address] = data.docker
+            Cookies.set('dockerChecked', hostStatus)
+          })
+        }
+      })
     })
   }
 })()
 
-createTerminal()
 function createTerminal(ip, id) {
   // Clean terminal
   while (terminalContainer.children.length) {
@@ -75,7 +76,6 @@ function createTerminal(ip, id) {
   }
 
   term = new Terminal({ cursorBlink: 1 })
-
   protocol  = (location.protocol === 'https:') ? 'wss://' : 'ws://'
   socketURL = protocol + location.hostname + ((location.port) ? (':' + location.port) : '') + '/terminals/'
 
@@ -100,7 +100,7 @@ function createTerminal(ip, id) {
         var flag = false
         document.getElementById(`docker-${ip}`).innerHTML = ''
         for (var i = 1; i < data.length; i++) {
-          console.log(i, data[i])
+          // console.log(i, data[i])
           if (data[i].substring(0, 12) === 'CONTAINER ID') {
             flag = true
           } else if (flag && data[i][0] !== '\\') {
@@ -150,8 +150,7 @@ function createTerminal(ip, id) {
       } else {
         window.pid = data.pid
         socketURL += data.pid
-        console.log('socketURL:', socketURL)
-
+        // console.log('socketURL:', socketURL)
         // webSocket connect
         socket = new WebSocket(socketURL)
         socket.onopen = runRealTerminal
@@ -189,7 +188,7 @@ function createTerminal(ip, id) {
       term.write(data)
     })
   }
-}
+}createTerminal()
 
 document.getElementById('settings').addEventListener('click', () => {
   if (terminalContainer.style.right !== '-20%') {
@@ -230,20 +229,29 @@ function submitAddress (ip) {
           var cookie = Cookies.getJSON('dockerChecked')
           if (!cookie[ip]) {
             cookie[ip] = data.docker
+            Cookies.set('dockerChecked', cookie)
             hostsContainer.innerHTML += `
               <div class='host' id='host-${ip}'>
                 ${ip}
               </div>
               <div id='docker-${ip}' />`
-            if (data.docker) {
-              document.getElementById(`host-${data.address}`)
-              .addEventListener('click', () => {
-                createTerminal(data.address)
-              })
-            }
-            document.getElementById(`host-${data.address}`).innerText +=
+            document.getElementById(`host-${ip}`).innerText +=
               data.docker === 0 ? '[无效]' : '[可连]'
-            Cookies.set('dockerChecked', cookie)
+
+            // rebind listener
+            for (i in cookie) {
+              if (cookie[i] === 1) {
+                document.getElementById(`host-${i}`).addEventListener('click', (e) => {
+                  if (document.getElementById(`docker-${e.target.id.split('-')[1]}`)
+                  .children.length > 0) {
+                    document.getElementById(`docker-${e.target.id.split('-')[1]}`)
+                    .innerHTML = ''
+                  } else {
+                    createTerminal(e.target.id.split('-')[1])
+                  }
+                })
+              }
+            }
           }
         })
       }

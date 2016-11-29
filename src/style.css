@@ -50,7 +50,6 @@ body {
   font-size: 30px;
   line-height: 1.5;
   font-weight: 100;
-  cursor: pointer;
   text-align: center;
   margin-bottom: 0;
   padding: 10px;
@@ -111,7 +110,6 @@ body {
   align-items: stretch;
   color: #888;
   word-break: break-all;
-  min-height: 60px;
   transition: all .2s ease;
   font-size: .9em;
 }
