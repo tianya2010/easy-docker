@@ -8,34 +8,59 @@
     body {
       font-family: monospace;
       margin: 0 auto;
-      width: 500px;
       text-align: center;
       color: #333;
     }
-    h2 {
-      font-weight: 100;
-    }
     hr {
+      width: 700px;
       border-top: solid 1px #eceef1;
     }
-    img {
+    .gif {
+      width: 80%;
       margin: 20px 0;
       border: solid 1px #eee;
       border-radius: 10px;
       box-shadow: 0 0 50px #aaa;
     }
     p {
-      font-size: 15px;
+      line-height: 1.1;
+      font-size: 1.5em;
+    }
+    .github:hover {
+      transition: all .2s ease;
+      transform: scale(1.1);
+    }
+    .link {
+      margin-top: 50px;
+    }
+    @media (min-width: 981px) {
+      .gif {
+        width: 500px;
+      }
     }
   </style>
   <body>
-    <h2>EasyDocker</h2>
+    <h1>EasyDocker</h1>
     <hr/>
     <br />
     <p>快速, 轻松地对本地或远程的docker容器进行重启,交互</p>
-    <img src='./easydocker.gif' />
-    <p>在浏览器中直接对docker容器使用终端进行操作, 也可以完成列表状态的查询, 重启等. 用户自定义查询表.</p>
-    <p><a href='http://10.1.10.36:3003'>公司内部在线使用</a></p>
-    <p><a href='https://github.com/lqs469/easy-docker'>项目地址</a></p>
+    <img class='gif' src='./easydocker.gif' />
+    <p>当你要重启docker容器或者要进入容器内部时, 不必再输入麻烦的docker命令了! </p>
+    <p>现在你可以在浏览器中直接查询容器的状态, 重启, 进入容器, 这些只需轻松一点.</p>
+    <span>(Ps: 建议
+      <a href='https://github.com/lqs469/easy-docker'>clone</a>
+      下来在本地环境使用, 由于终端是启动于后台主机, 所以请大家
+      <a href='http://10.1.10.36:3003'>内部在线使用</a>
+      时对我的机器温柔一点😂)</span>
+    <div class='link'>
+      <p>
+        <a href='http://10.1.10.36:3003'>内部在线使用(10.1.10.36:3003)</a>
+      </p>
+      <p>
+        <a href='https://github.com/lqs469/easy-docker'>
+          <img class='github' src='https://assets-cdn.github.com/images/icons/emoji/octocat.png'>
+        </a>
+      </p>
+    </div>
   </body>
 </html>
