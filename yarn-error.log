@@ -1,0 +1,61 @@
+Arguments: 
+  /home/l/.nvm/versions/node/v7.2.0/bin/node /usr/share/yarn/bin/yarn.js
+
+PATH: 
+  /home/l/.rvm/gems/ruby-2.4.0/bin:/home/l/.rvm/gems/ruby-2.4.0@global/bin:/home/l/.rvm/rubies/ruby-2.4.0/bin:/home/l/.nvm/versions/node/v7.2.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/l:/snap/bin:/home/l/.rvm/bin:/home/l/.rvm/bin:/home/l/.rvm/gems/ruby-2.4.0/bin/bundler
+
+Yarn version: 
+  0.21.3
+
+Node version: 
+  7.2.0
+
+Platform: 
+  linux x64
+
+npm manifest: 
+  {
+    "name": "easydocker",
+    "version": "1.0.0",
+    "description": "remote ssh docker and list by terminal in browers",
+    "main": "app.js",
+    "scripts": {
+      "start": "nodemon --exec bash -c 'babel-node serve'"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/lqs469/easy-docker.git"
+    },
+    "author": "lqs469",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/lqs469/easy-docker/issues"
+    },
+    "homepage": "https://github.com/lqs469/easy-docker#readme",
+    "dependencies": {
+      "body-parser": "^1.15.2",
+      "express": "^4.14.0",
+      "express-ws": "^2.0.0",
+      "flat-ui": "^2.1.1",
+      "node-fetch": "^1.6.3",
+      "nodemon": "^1.11.0",
+      "pty": "0.0.0",
+      "xterm": "^2.1.0"
+    },
+    "devDependencies": {
+      "eslint": "^3.10.2",
+      "eslint-plugin-react": "^6.7.1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
+
+Trace: 
+  Error: connect ETIMEDOUT 104.16.62.173:443
+      at Object.exports._errnoException (util.js:1022:11)
+      at exports._exceptionWithHostPort (util.js:1045:20)
+      at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
